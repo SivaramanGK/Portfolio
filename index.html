@@ -1,735 +1,312 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sivaraman Ganesan | Data Analyst & Frontend Developer</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: #020617; color: #e2e8f0; overflow-x: hidden; }
-
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #0ea5e9; border-radius: 4px; }
-
-        #three-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
-
-        .glass {
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-        .glass-strong {
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .perspective-container { perspective: 1200px; }
-        .preserve-3d { transform-style: preserve-3d; }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px) rotateX(0deg); }
-            50% { transform: translateY(-20px) rotateX(3deg); }
-        }
-        @keyframes float-slow {
-            0%, 100% { transform: translateY(0px) rotateY(0deg); }
-            50% { transform: translateY(-15px) rotateY(5deg); }
-        }
-        @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 20px rgba(14, 165, 233, 0.3); }
-            50% { box-shadow: 0 0 50px rgba(14, 165, 233, 0.6); }
-        }
-        @keyframes text-shimmer {
-            0% { background-position: -200% center; }
-            100% { background-position: 200% center; }
-        }
-        @keyframes orbit {
-            from { transform: rotateY(0deg) translateX(150px) rotateY(0deg); }
-            to { transform: rotateY(360deg) translateX(150px) rotateY(-360deg); }
-        }
-        @keyframes orbit-reverse {
-            from { transform: rotateY(360deg) translateX(200px) rotateY(-360deg); }
-            to { transform: rotateY(0deg) translateX(200px) rotateY(0deg); }
-        }
-        @keyframes spin-slow {
-            from { transform: rotateY(0deg) rotateX(-15deg); }
-            to { transform: rotateY(360deg) rotateX(-15deg); }
-        }
-        @keyframes gradient-shift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        .animate-float { animation: float 6s ease-in-out infinite; }
-        .animate-float-slow { animation: float-slow 8s ease-in-out infinite; }
-        .animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
-        .animate-orbit { animation: orbit 25s linear infinite; }
-        .animate-orbit-reverse { animation: orbit-reverse 30s linear infinite; }
-        .animate-spin-slow { animation: spin-slow 20s linear infinite; }
-        .animate-gradient { background-size: 200% 200%; animation: gradient-shift 5s ease infinite; }
-
-        .text-gradient {
-            background: linear-gradient(135deg, #22d3ee, #3b82f6, #a855f7);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        .text-shimmer {
-            background: linear-gradient(90deg, #22d3ee, #3b82f6, #a855f7, #22d3ee);
-            background-size: 200% auto;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: text-shimmer 4s linear infinite;
-        }
-
-        .card-3d {
-            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-            transform-style: preserve-3d;
-        }
-        .card-3d:hover {
-            transform: translateY(-12px) rotateX(5deg) rotateY(-5deg);
-            box-shadow: 
-                0 25px 50px -12px rgba(14, 165, 233, 0.25),
-                0 0 0 1px rgba(14, 165, 233, 0.1);
-        }
-
-        .skill-bar { position: relative; overflow: hidden; }
-        .skill-bar::after {
-            content: '';
-            position: absolute;
-            top: 0; right: 0;
-            width: 30px; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3));
-            animation: shimmer 2s infinite;
-        }
-        @keyframes shimmer {
-            0% { transform: translateX(-30px); }
-            100% { transform: translateX(30px); }
-        }
-
-        .nav-link { position: relative; }
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            bottom: -4px; left: 0;
-            width: 0; height: 2px;
-            background: linear-gradient(90deg, #22d3ee, #3b82f6);
-            transition: width 0.3s ease;
-        }
-        .nav-link:hover::after { width: 100%; }
-
-        .reveal {
-            opacity: 0;
-            transform: translateY(40px);
-            transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
-        }
-        .reveal.active {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .cube-face {
-            position: absolute;
-            width: 200px; height: 200px;
-            border: 2px solid rgba(34, 211, 238, 0.3);
-            background: rgba(15, 23, 42, 0.85);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3rem;
-            backface-visibility: visible;
-        }
-
-        .mobile-menu {
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-        }
-        .mobile-menu.open { transform: translateX(0); }
-
-        /* Project iframe preview */
-        .project-preview {
-            position: relative;
-            overflow: hidden;
-            border-radius: 1rem 1rem 0 0;
-        }
-        .project-preview iframe {
-            width: 100%;
-            height: 220px;
-            border: none;
-            transform: scale(0.5);
-            transform-origin: top left;
-            width: 200%;
-            height: 440px;
-            pointer-events: none;
-        }
-        .project-preview-overlay {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(to bottom, transparent 60%, rgba(15,23,42,0.9));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Live badge */
-        .live-badge {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            background: rgba(34, 197, 94, 0.9);
-            color: white;
-            padding: 4px 12px;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            backdrop-filter: blur(8px);
-        }
-        .live-badge::before {
-            content: '';
-            width: 8px; height: 8px;
-            background: white;
-            border-radius: 50%;
-            animation: pulse-dot 1.5s ease-in-out infinite;
-        }
-        @keyframes pulse-dot {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(0.8); }
-        }
-
-        /* Previous work banner */
-        .prev-work-banner {
-            background: linear-gradient(135deg, rgba(14,165,233,0.1), rgba(168,85,247,0.1));
-            border: 1px solid rgba(14,165,233,0.2);
-        }
-    </style>
-<base target="_blank">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sivaraman Ganesan | Data Analyst & Frontend Developer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500;1,600&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+:root{--bg:#05070b;--fg:#e9edf2;--dim:#8a94a3;--accent:#5ee6ff;--accent2:#8b7bff;--line:rgba(255,255,255,.12);color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root{--bg:#05070b;--fg:#e9edf2;--dim:#8a94a3}}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:300 17px/1.7 Inter,system-ui,sans-serif;overflow-x:hidden}
+.serif{font-family:'Cormorant Garamond',Georgia,serif}
+a{color:inherit;text-decoration:none}
+#gl{position:fixed;inset:0;width:100%;height:100%;z-index:0}
+.grain{position:fixed;inset:-50%;width:200%;height:200%;z-index:90;pointer-events:none;opacity:.07;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/></filter><rect width='200' height='200' filter='url(%23n)'/></svg>");animation:grain 1s steps(6) infinite}
+@keyframes grain{0%{transform:translate(0,0)}20%{transform:translate(-4%,3%)}40%{transform:translate(3%,-5%)}60%{transform:translate(-5%,-2%)}80%{transform:translate(4%,4%)}100%{transform:translate(0,0)}}
+.vig{position:fixed;inset:0;z-index:80;pointer-events:none;background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.65))}
+.bar{position:fixed;left:0;right:0;height:11vh;background:#000;z-index:95;transition:height 1.6s cubic-bezier(.7,0,.2,1)}
+.bar.t{top:0}.bar.b{bottom:0}
+body.live .bar{height:0}
+#pre{position:fixed;inset:0;z-index:100;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.2rem;transition:opacity 1s .2s,visibility 1.2s}
+#pre.done{opacity:0;visibility:hidden}
+#cnt{font-size:clamp(5rem,18vw,12rem);line-height:1;font-style:italic;color:var(--fg)}
+#pre p{color:var(--dim);letter-spacing:.3em;font-size:.8rem}
+#pre i{display:block;width:min(260px,60vw);height:1px;background:var(--line);position:relative;overflow:hidden}
+#pre i b{position:absolute;inset:0;background:var(--accent);transform:scaleX(0);transform-origin:left}
+#prog{position:fixed;top:0;left:0;height:2px;width:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transform:scaleX(0);transform-origin:left;z-index:96}
+nav{position:fixed;top:calc(11vh + 14px);left:0;right:0;z-index:70;display:flex;justify-content:space-between;align-items:center;padding:0 clamp(1rem,4vw,3rem);mix-blend-mode:difference;opacity:0;transition:opacity 1s 2s}
+body.live nav{opacity:1;top:14px;transition:opacity 1s 2s,top 1.6s cubic-bezier(.7,0,.2,1)}
+nav .logo{font-size:1.7rem;font-weight:700;font-style:italic}
+nav div{display:flex;gap:1.6rem;font-size:.85rem}
+nav a{opacity:.7;transition:opacity .3s}nav a:hover{opacity:1}
+@media(max-width:640px){nav div a:nth-child(-n+2){display:none}nav div{gap:1rem}}
+main{position:relative;z-index:10}
+section{position:relative}
+.hero{height:100vh;min-height:560px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:0 1.2rem}
+.hero .role{color:var(--accent);font-size:.9rem;letter-spacing:.35em;opacity:0;transition:opacity 1.4s 2.4s}
+body.live .hero .role{opacity:1}
+h1{font-family:'Cormorant Garamond',Georgia,serif;font-weight:700;font-size:clamp(3.4rem,13vw,11rem);line-height:.92;margin:1.2rem 0;letter-spacing:-.02em}
+h1 .row{display:block;overflow:hidden;padding:.05em .1em}
+h1 .row:nth-child(2){font-style:italic;font-weight:500;background:linear-gradient(100deg,var(--accent),var(--accent2) 60%,var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent;background-size:200% 100%;animation:sweep 6s linear infinite}
+@keyframes sweep{to{background-position:-200% 0}}
+h1 .ch{display:inline-block;transform:translateY(110%) rotate(6deg);filter:blur(12px);opacity:0;transition:transform 1.3s cubic-bezier(.2,.9,.2,1),filter 1.3s,opacity 1.3s}
+body.live h1 .ch{transform:none;filter:none;opacity:1}
+.hero .sub{max-width:34rem;color:var(--dim);opacity:0;transition:opacity 1.6s 3.1s}
+body.live .hero .sub{opacity:1}
+.cue{position:absolute;bottom:14vh;left:50%;width:1px;height:70px;background:linear-gradient(var(--accent),transparent);animation:cue 2s ease-in-out infinite}
+@keyframes cue{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+.about{min-height:140vh;padding:25vh clamp(1.2rem,8vw,8rem) 10vh;display:flex;align-items:flex-start}
+.about p{font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(1.9rem,4.6vw,4rem);line-height:1.2;max-width:22ch;max-width:30ch;position:sticky;top:30vh}
+.about .w{opacity:.14;transition:opacity .4s,color .4s}
+.about .w.on{opacity:1}
+.about .w.k{color:var(--accent)}
+.facts{display:flex;flex-wrap:wrap;gap:3rem 5rem;padding:0 clamp(1.2rem,8vw,8rem) 18vh}
+.facts div{border-top:1px solid var(--line);padding-top:1rem;min-width:9rem}
+.facts b{display:block;font-family:'Cormorant Garamond',serif;font-weight:500;font-size:clamp(3rem,7vw,5.5rem);line-height:1}
+.facts span{color:var(--dim);font-size:.9rem}
+.marq{overflow:hidden;border-block:1px solid var(--line);padding:1.6rem 0;background:rgba(5,7,11,.55);backdrop-filter:blur(6px)}
+.marq div{display:flex;gap:3rem;width:max-content;animation:mq 30s linear infinite;font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,5vw,3.6rem);font-style:italic;white-space:nowrap}
+.marq span:nth-child(even){color:transparent;-webkit-text-stroke:1px var(--dim)}
+@keyframes mq{to{transform:translateX(-50%)}}
+.street{height:900vh;position:relative}
+.pin{position:sticky;top:0;height:100vh;overflow:hidden}
+#st{position:absolute;inset:0;width:100%;height:100%;display:block}
+.hud{position:absolute;inset:0;pointer-events:none}
+.intro{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);text-align:center;width:min(92vw,46rem);text-shadow:0 2px 30px #000}
+.intro h2{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:clamp(2.6rem,8vw,6.5rem);line-height:1}
+.intro h2 em{color:var(--accent)}
+.intro p{color:#c3ccd8;margin-top:1rem}
+.hint{position:absolute;bottom:calc(11vh + 18px);left:50%;transform:translateX(-50%);color:var(--dim);font-size:.85rem;white-space:nowrap}
+.panel{position:absolute;top:50%;width:min(360px,42vw);padding:1.8rem;border:1px solid var(--line);border-radius:4px;background:rgba(6,10,18,.78);backdrop-filter:blur(14px);opacity:0;transform:translateY(-50%)}
+.panel.r{right:clamp(1rem,5vw,5rem)}.panel.l{left:clamp(1rem,5vw,5rem)}
+.panel .pic{width:64px;height:64px;fill:none;stroke-width:1.1;stroke-linecap:round;stroke-linejoin:round;margin-bottom:1rem;filter:drop-shadow(0 0 8px currentColor)}
+.panel small{display:block;color:var(--dim);font-size:.8rem}
+.panel h3{font-family:'Cormorant Garamond',serif;font-size:2.3rem;line-height:1.05;margin:.2rem 0 .6rem}
+.panel p{color:#b7c0cc;font-size:.95rem;margin-bottom:1rem}
+.tags{display:flex;gap:.5rem;flex-wrap:wrap}
+.tags span{font-size:.75rem;border:1px solid var(--line);border-radius:99px;padding:.15rem .75rem}
+.panel a,.panel em{display:inline-block;margin-top:1.2rem;font-size:.9rem;font-style:normal;color:var(--c);border-bottom:1px solid var(--c);padding-bottom:2px}
+.panel em{color:var(--dim);border-color:var(--line)}
+.dots{position:absolute;left:clamp(.8rem,2.5vw,2rem);top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:.9rem}
+.dots i{width:8px;height:8px;border-radius:50%;border:1px solid var(--dim);transition:.4s}
+.dots i.on{background:var(--accent);border-color:var(--accent);box-shadow:0 0 12px var(--accent);transform:scale(1.5)}
+.endmsg{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);text-align:center;opacity:0;font-family:'Cormorant Garamond',serif;font-size:clamp(2.2rem,6vw,5rem);line-height:1.05;text-shadow:0 2px 30px #000;width:90vw}
+@media(max-width:700px){.panel{top:auto;bottom:calc(11vh + 12px);left:1rem!important;right:1rem!important;width:auto;transform:none;padding:1.1rem}.panel h3{font-size:1.7rem}.panel .pic{width:44px;height:44px;margin-bottom:.4rem}.panel p{font-size:.88rem;margin-bottom:.6rem}.dots{display:none}}
+.contact{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:15vh 0 8vh}
+.contact h2{font-size:clamp(3rem,10vw,9rem);margin-bottom:3rem}
+.contact h2 em{color:var(--accent)}
+.links{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1px;margin:0 clamp(1.2rem,8vw,8rem);background:var(--line)}
+.links a{background:var(--bg);padding:2rem 1.4rem;transition:background .4s,padding .4s}
+.links a:hover{background:#0b121c;padding-left:2.2rem}
+.links small{color:var(--dim);display:block}
+.links span{font-family:'Cormorant Garamond',serif;font-size:1.7rem;word-break:break-all}
+footer{padding:3rem clamp(1.2rem,8vw,8rem) 14vh;color:var(--dim);font-size:.85rem}
+#cur{position:fixed;width:340px;height:340px;margin:-170px 0 0 -170px;border-radius:50%;pointer-events:none;z-index:85;background:radial-gradient(circle,rgba(94,230,255,.13),transparent 65%);mix-blend-mode:screen}
+@media(hover:none){#cur{display:none}}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+@media(prefers-reduced-motion:reduce){.grain,.marq div,.cue,h1 .row:nth-child(2){animation:none}}
+</style>
 </head>
 <body>
-    <canvas id="three-canvas"></canvas>
+<div id="pre"><div id="cnt" class="serif">0</div><i><b id="pb"></b></i><p>Sivaraman Ganesan presents</p></div>
+<div class="bar t"></div><div class="bar b"></div>
+<div id="prog"></div><div class="grain"></div><div class="vig"></div><div id="cur"></div>
+<canvas id="gl"></canvas>
 
-    <!-- Navigation -->
-    <nav class="fixed top-0 left-0 right-0 z-50 glass-strong">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-            <a href="#hero" class="text-2xl font-black text-gradient tracking-tight">SG</a>
-            <div class="hidden md:flex gap-8 text-sm font-medium">
-                <a href="#hero" class="nav-link text-slate-400 hover:text-cyan-400 transition-colors">Home</a>
-                <a href="#about" class="nav-link text-slate-400 hover:text-cyan-400 transition-colors">About</a>
-                <a href="#skills" class="nav-link text-slate-400 hover:text-cyan-400 transition-colors">Skills</a>
-                <a href="#projects" class="nav-link text-slate-400 hover:text-cyan-400 transition-colors">Projects</a>
-                <a href="#previous" class="nav-link text-slate-400 hover:text-cyan-400 transition-colors">Previous Work</a>
-                <a href="#contact" class="nav-link text-slate-400 hover:text-cyan-400 transition-colors">Contact</a>
-            </div>
-            <button id="menu-btn" class="md:hidden text-slate-300 text-2xl">☰</button>
-        </div>
-        <div id="mobile-menu" class="mobile-menu fixed top-0 right-0 w-72 h-full glass-strong md:hidden">
-            <div class="p-6">
-                <button id="close-menu" class="text-slate-300 text-2xl mb-8">✕</button>
-                <div class="flex flex-col gap-6 text-lg font-medium">
-                    <a href="#hero" class="text-slate-400 hover:text-cyan-400 transition-colors">Home</a>
-                    <a href="#about" class="text-slate-400 hover:text-cyan-400 transition-colors">About</a>
-                    <a href="#skills" class="text-slate-400 hover:text-cyan-400 transition-colors">Skills</a>
-                    <a href="#projects" class="text-slate-400 hover:text-cyan-400 transition-colors">Projects</a>
-                    <a href="#previous" class="text-slate-400 hover:text-cyan-400 transition-colors">Previous Work</a>
-                    <a href="#contact" class="text-slate-400 hover:text-cyan-400 transition-colors">Contact</a>
-                </div>
-            </div>
-        </div>
-    </nav>
+<nav><a href="#hero" class="logo serif">SG</a>
+<div><a href="#about">About</a><a href="#skills">Skills</a><a href="#work">Projects</a><a href="#contact">Contact</a></div></nav>
 
-    <!-- Hero Section -->
-    <section id="hero" class="relative min-h-screen flex items-center justify-center overflow-hidden">
-        <div class="max-w-7xl mx-auto px-6 py-32 relative z-10">
-            <div class="flex flex-col lg:flex-row items-center gap-16">
-                <div class="flex-1 space-y-8 text-center lg:text-left">
-                    <div class="inline-block px-4 py-2 rounded-full glass text-cyan-400 text-sm font-semibold border border-cyan-500/20 animate-float">
-                        Data Analyst & Power BI Developer
-                    </div>
-                    <h1 class="text-5xl md:text-7xl lg:text-8xl font-black leading-none">
-                        <span class="block text-white">Sivaraman</span>
-                        <span class="block text-shimmer">Ganesan</span>
-                    </h1>
-                    <p class="text-lg md:text-xl text-slate-400 max-w-xl leading-relaxed mx-auto lg:mx-0 animate-float-slow">
-                        Bridging the gap between <span class="text-cyan-400 font-semibold">raw data</span> and 
-                        <span class="text-blue-400 font-semibold">stunning interfaces</span>. I transform complex datasets 
-                        into intuitive dashboards and craft pixel-perfect web experiences.
-                    </p>
-                    <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-4">
-                        <a href="#projects" class="px-8 py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold text-lg hover:shadow-2xl hover:shadow-cyan-500/30 transition-all hover:-translate-y-1 animate-gradient">
-                            View Projects
-                        </a>
-                        <a href="#contact" class="px-8 py-4 rounded-xl glass text-slate-300 font-bold text-lg hover:border-cyan-500/50 hover:text-cyan-400 transition-all hover:-translate-y-1">
-                            Get In Touch
-                        </a>
-                    </div>
-                </div>
+<main>
+<section class="hero" id="hero">
+  <p class="role" id="role">Data analyst</p>
+  <h1 id="title"><span class="row">Sivaraman</span><span class="row">Ganesan</span></h1>
+  <p class="sub">I turn raw data into clear dashboards, and clear ideas into fast, polished websites.</p>
+  <div class="cue"></div>
+</section>
 
-                <div class="flex-1 flex justify-center perspective-container">
-                    <div class="relative w-64 h-64 preserve-3d animate-spin-slow" id="hero-cube">
-                        <div class="cube-face" style="transform: translateZ(100px);">
-                            <div class="text-center">
-                                <div class="text-5xl mb-2">📊</div>
-                                <div class="text-cyan-400 text-sm font-bold">Data</div>
-                            </div>
-                        </div>
-                        <div class="cube-face" style="transform: rotateY(180deg) translateZ(100px);">
-                            <div class="text-center">
-                                <div class="text-5xl mb-2">🎨</div>
-                                <div class="text-blue-400 text-sm font-bold">Design</div>
-                            </div>
-                        </div>
-                        <div class="cube-face" style="transform: rotateY(90deg) translateZ(100px);">
-                            <div class="text-center">
-                                <div class="text-5xl mb-2">⚡</div>
-                                <div class="text-purple-400 text-sm font-bold">Code</div>
-                            </div>
-                        </div>
-                        <div class="cube-face" style="transform: rotateY(-90deg) translateZ(100px);">
-                            <div class="text-center">
-                                <div class="text-5xl mb-2">🔍</div>
-                                <div class="text-green-400 text-sm font-bold">Analyze</div>
-                            </div>
-                        </div>
-                        <div class="cube-face" style="transform: rotateX(90deg) translateZ(100px);">
-                            <div class="text-center">
-                                <div class="text-5xl mb-2">🚀</div>
-                                <div class="text-yellow-400 text-sm font-bold">Build</div>
-                            </div>
-                        </div>
-                        <div class="cube-face" style="transform: rotateX(-90deg) translateZ(100px);">
-                            <div class="text-center">
-                                <div class="text-5xl mb-2">✨</div>
-                                <div class="text-pink-400 text-sm bold">Create</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+<section class="about" id="about"><p id="story">I work where data meets design. I write SQL, build Power BI dashboards, and craft responsive React interfaces, so the numbers I find are also easy to see and understand.</p></section>
+<div class="facts">
+  <div><b data-n="3" data-s="+">0</b><span>Years of experience</span></div>
+  <div><b data-n="15" data-s="+">0</b><span>Projects shipped</span></div>
+  <div><b data-n="100" data-s="%">0</b><span>Client satisfaction</span></div>
+</div>
 
-        <div class="absolute inset-0 flex items-center justify-center pointer-events-none perspective-container">
-            <div class="relative w-[500px] h-[500px] preserve-3d">
-                <div class="absolute inset-0 animate-orbit preserve-3d">
-                    <div class="w-14 h-14 rounded-2xl glass flex items-center justify-center text-cyan-400 text-2xl animate-pulse-glow">📈</div>
-                </div>
-                <div class="absolute inset-0 animate-orbit-reverse preserve-3d">
-                    <div class="w-12 h-12 rounded-2xl glass flex items-center justify-center text-blue-400 text-xl animate-pulse-glow">💻</div>
-                </div>
-                <div class="absolute inset-0 animate-orbit preserve-3d" style="animation-delay: -8s; animation-duration: 35s;">
-                    <div class="w-10 h-10 rounded-xl glass flex items-center justify-center text-purple-400 animate-pulse-glow">⚡</div>
-                </div>
-            </div>
-        </div>
-    </section>
+<div class="marq" id="skills"><div>
+<span>Power BI</span><span>SQL</span><span>Python</span><span>React</span><span>Tableau</span><span>Excel</span><span>JavaScript</span><span>Tailwind CSS</span><span>Three.js</span>
+<span>Power BI</span><span>SQL</span><span>Python</span><span>React</span><span>Tableau</span><span>Excel</span><span>JavaScript</span><span>Tailwind CSS</span><span>Three.js</span>
+</div></div>
 
-    <!-- About Section -->
-    <section id="about" class="py-24 relative z-10">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="text-center mb-16 reveal">
-                <h2 class="text-4xl md:text-5xl font-black mb-4">About <span class="text-gradient">Me</span></h2>
-                <div class="w-24 h-1 bg-gradient-to-r from-cyan-400 to-blue-500 mx-auto rounded-full"></div>
-            </div>
+<section class="street" id="work"><div class="pin">
+  <canvas id="st"></canvas>
+  <div class="hud">
+    <div class="intro" id="intro"><h2>Welcome to <em>my street.</em></h2><p>Six buildings, six projects. Scroll to walk down the road and stop in front of each one.</p></div>
+    <div class="dots" id="dots"></div>
+    <div class="panel" id="pn"></div>
+    <div class="endmsg" id="endm">That’s the end of the street.<br>Come say hello.</div>
+    <div class="hint" id="hint">Scroll to keep walking</div>
+  </div>
+</div></section>
 
-            <div class="flex flex-col lg:flex-row items-center gap-16">
-                <div class="flex-1 space-y-6 text-lg text-slate-400 leading-relaxed reveal">
-                    <p>
-                        Hello! I'm <strong class="text-white">Sivaraman Ganesan</strong>, a developer who thrives at the 
-                        intersection of <span class="text-cyan-400">data</span> and <span class="text-blue-400">design</span>. 
-                        With expertise in both frontend development and data analysis, I bring a unique dual perspective to every project.
-                    </p>
-                    <p>
-                        From writing complex SQL queries to crafting responsive React components, I enjoy the full spectrum 
-                        of building data-driven applications. My passion lies in transforming raw numbers into compelling visual stories.
-                    </p>
-                    <p>
-                        When I'm not coding, you'll find me exploring new visualization libraries, optimizing query performance, 
-                        or experimenting with the latest CSS features.
-                    </p>
-                </div>
+<section class="contact" id="contact">
+  <h2>Let’s make something <em>worth watching.</em></h2>
+  <div class="links">
+    <a href="tel:7338714210"><small>Phone</small><span>7338714210</span></a>
+    <a href="mailto:sivaramang313@gmail.com"><small>Email</small><span>sivaramang313@gmail.com</span></a>
+    <a href="https://www.linkedin.com/in/sivaraman-ganesan-8241b5296" target="_blank" rel="noopener"><small>LinkedIn</small><span>sivaraman-ganesan</span></a>
+  </div>
+</section>
+<footer>© 2026 Sivaraman Ganesan. Built with Three.js.</footer>
+</main>
 
-                <div class="flex-1 grid grid-cols-2 gap-6 perspective-container">
-                    <div class="glass rounded-2xl p-8 text-center card-3d animate-float reveal" style="transform: rotateY(-8deg) rotateX(5deg);">
-                        <div class="text-5xl font-black text-cyan-400 mb-2">3+</div>
-                        <div class="text-slate-500 font-medium">Years Experience</div>
-                    </div>
-                    <div class="glass rounded-2xl p-8 text-center card-3d animate-float-slow reveal" style="animation-delay: 0.2s; transform: rotateY(8deg) rotateX(-5deg);">
-                        <div class="text-5xl font-black text-blue-400 mb-2">15+</div>
-                        <div class="text-slate-500 font-medium">Projects Done</div>
-                    </div>
-                    <div class="glass rounded-2xl p-8 text-center card-3d animate-float-slow reveal" style="animation-delay: 0.4s; transform: rotateY(8deg) rotateX(5deg);">
-                        <div class="text-5xl font-black text-purple-400 mb-2">100%</div>
-                        <div class="text-slate-500 font-medium">Satisfaction</div>
-                    </div>
-                    <div class="glass rounded-2xl p-8 text-center card-3d animate-float reveal" style="animation-delay: 0.6s; transform: rotateY(-8deg) rotateX(-5deg);">
-                        <div class="text-5xl font-black text-pink-400 mb-2">24/7</div>
-                        <div class="text-slate-500 font-medium">Support</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+<script>
+(function(){
+var RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
+var $=function(s){return document.querySelector(s)};
+// split title into characters
+document.querySelectorAll('#title .row').forEach(function(r,ri){
+  var t=r.textContent;r.textContent='';
+  t.split('').forEach(function(c,i){var s=document.createElement('span');s.className='ch';s.textContent=c;s.style.transitionDelay=(2.2+ri*.35+i*.05)+'s';r.appendChild(s)});
+});
+// split story into words
+var story=$('#story'),words=story.textContent.split(' '),key=['data','design.','SQL,','Power','BI','React'];
+story.innerHTML=words.map(function(w){return '<span class="w'+(key.indexOf(w)>-1?' k':'')+'">'+w+'</span>'}).join(' ');
+var ws=[].slice.call(story.querySelectorAll('.w'));
+// preloader
+var cnt=$('#cnt'),pb=$('#pb'),n=0,t0=performance.now(),dur=RM?300:2400;
+(function tick(now){
+  var p=Math.min(1,((now||performance.now())-t0)/dur);n=Math.round(100*(1-Math.pow(1-p,3)));
+  cnt.textContent=n;pb.style.transform='scaleX('+p+')';
+  if(p<1)requestAnimationFrame(tick);else{$('#pre').classList.add('done');document.body.classList.add('live')}
+})();
+// rotating roles
+var roles=['Data analyst','Power BI developer','Frontend developer','Storyteller with data'],ri=0,rl=$('#role');
+setInterval(function(){rl.style.transition='opacity .5s';rl.style.opacity=0;setTimeout(function(){ri=(ri+1)%roles.length;rl.textContent=roles[ri];rl.style.opacity=1},550)},3600);
+// counters
+var cio=new IntersectionObserver(function(es){es.forEach(function(e){if(!e.isIntersecting)return;cio.unobserve(e.target);var el=e.target,end=+el.dataset.n,s=performance.now();(function f(now){var p=Math.min(1,(now-s)/1600);el.textContent=Math.round(end*(1-Math.pow(1-p,3)))+(p>=1?el.dataset.s:'');if(p<1)requestAnimationFrame(f)})(s)})},{threshold:.6});
+document.querySelectorAll('[data-n]').forEach(function(e){cio.observe(e)});
+// smooth nav
+document.querySelectorAll('a[href^="#"]').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();var t=document.querySelector(a.getAttribute('href'));if(t)t.scrollIntoView({behavior:RM?'auto':'smooth'})})});
+// cursor light + card spotlight
+var cur=$('#cur'),cx=innerWidth/2,cy=innerHeight/2,tx=cx,ty=cy,mx=0,my=0;
+addEventListener('pointermove',function(e){tx=e.clientX;ty=e.clientY;mx=e.clientX/innerWidth*2-1;my=e.clientY/innerHeight*2-1});
 
-    
-    <!-- Projects Section -->
-    <section id="projects" class="py-24 relative z-10 bg-slate-900/40">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="text-center mb-16 reveal">
-                <h2 class="text-4xl md:text-5xl font-black mb-4">Featured <span class="text-gradient">Projects</span></h2>
-                <div class="w-24 h-1 bg-gradient-to-r from-cyan-400 to-blue-500 mx-auto rounded-full mb-4"></div>
-                <p class="text-slate-400 text-lg">Where Data meets Design</p>
-            </div>
-
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 perspective-container">
-                <div class="card-3d glass rounded-2xl overflow-hidden reveal">
-                    <div class="h-56 bg-gradient-to-br from-slate-800 via-slate-900 to-cyan-900/40 flex items-center justify-center relative overflow-hidden group">
-                        <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(34,211,238,0.15),transparent)]"></div>
-                        <span class="text-7xl relative z-10 transition-transform duration-500 group-hover:scale-125">📈</span>
-                    </div>
-                    <div class="p-7">
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            <span class="px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-400 text-xs font-bold border border-cyan-500/20">Python</span>
-                            <span class="px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 text-xs font-bold border border-blue-500/20">Power BI</span>
-                        </div>
-                        <h3 class="text-xl font-bold mb-3">Sales Dashboard</h3>
-                        <p class="text-slate-400 text-sm mb-5 leading-relaxed">Interactive analytics dashboard with real-time KPI tracking and regional performance breakdown.</p>
-                        <a href="#" class="text-cyan-400 font-semibold hover:underline inline-flex items-center gap-2 group/link">
-                            View Project <span class="transition-transform group-hover/link:translate-x-1">→</span>
-                        </a>
-                    </div>
-                </div>
-
-                <div class="card-3d glass rounded-2xl overflow-hidden reveal" style="animation-delay: 0.1s;">
-                    <div class="h-56 bg-gradient-to-br from-slate-800 via-slate-900 to-blue-900/40 flex items-center justify-center relative overflow-hidden group">
-                        <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.15),transparent)]"></div>
-                        <span class="text-7xl relative z-10 transition-transform duration-500 group-hover:scale-125"> 🎧 </span>
-                    </div>
-                    <div class="p-7">
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            <span class="px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 text-xs font-bold border border-blue-500/20">React</span>
-                            <span class="px-3 py-1 rounded-full bg-purple-500/10 text-purple-400 text-xs font-bold border border-purple-500/20">Tailwind</span>
-                        </div>
-                        <h3 class="text-xl font-bold mb-3">Sandbox Music (Spotify Clone)</h3>
-                        <p class="text-slate-400 text-sm mb-5 leading-relaxed">Modern music player web application.</p>
-                        <a href="https://sandboxmusics.netlify.app/" class="text-blue-400 font-semibold hover:underline inline-flex items-center gap-2 group/link">
-                            View Project <span class="transition-transform group-hover/link:translate-x-1">→</span>
-                        </a>
-                    </div>
-                </div>
-
-                <div class="card-3d glass rounded-2xl overflow-hidden reveal" style="animation-delay: 0.2s;">
-                    <div class="h-56 bg-gradient-to-br from-slate-800 via-slate-900 to-purple-900/40 flex items-center justify-center relative overflow-hidden group">
-                        <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(168,85,247,0.15),transparent)]"></div>
-                        <span class="text-7xl relative z-10 transition-transform duration-500 group-hover:scale-125">🗂️</span>
-                    </div>
-                    <div class="p-7">
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            <span class="px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-400 text-xs font-bold border border-cyan-500/20">SQL</span>
-                            <span class="px-3 py-1 rounded-full bg-green-500/10 text-green-400 text-xs font-bold border border-green-500/20">Excel</span>
-                        </div>
-                        <h3 class="text-xl font-bold mb-3">Customer Segmentation</h3>
-                        <p class="text-slate-400 text-sm mb-5 leading-relaxed">RFM analysis project segmenting customers by behavior to drive targeted marketing strategies.</p>
-                        <a href="#" class="text-purple-400 font-semibold hover:underline inline-flex items-center gap-2 group/link">
-                            View Project <span class="transition-transform group-hover/link:translate-x-1">→</span>
-                        </a>
-                    </div>
-                </div>
-
-                <div class="card-3d glass rounded-2xl overflow-hidden reveal" style="animation-delay: 0.3s;">
-                    <div class="h-56 bg-gradient-to-br from-slate-800 via-slate-900 to-pink-900/40 flex items-center justify-center relative overflow-hidden group">
-                        <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(236,72,153,0.15),transparent)]"></div>
-                        <span class="text-7xl relative z-10 transition-transform duration-500 group-hover:scale-125"></span>
-                    </div>
-                    <div class="p-7">
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            <span class="px-3 py-1 rounded-full bg-yellow-500/10 text-yellow-400 text-xs font-bold border border-yellow-500/20">JavaScript</span>
-                            <span class="px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 text-xs font-bold border border-blue-500/20">API</span>
-                        </div>
-                        <h3 class="text-xl font-bold mb-3">Parallax Website</h3>
-                        <p class="text-slate-400 text-sm mb-5 leading-relaxed">A modern responsive parallax scrolling website featuring smooth animations and an engaging user experience.</p>
-                        <a href="https://parallaxwe.netlify.app/" class="text-pink-400 font-semibold hover:underline inline-flex items-center gap-2 group/link">
-                            View Project <span class="transition-transform group-hover/link:translate-x-1">→</span>
-                        </a>
-                    </div>
-                </div>
-
-                <div class="card-3d glass rounded-2xl overflow-hidden reveal" style="animation-delay: 0.4s;">
-                    <div class="h-56 bg-gradient-to-br from-slate-800 via-slate-900 to-green-900/40 flex items-center justify-center relative overflow-hidden group">
-                        <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(34,197,94,0.15),transparent)]"></div>
-                        <span class="text-7xl relative z-10 transition-transform duration-500 group-hover:scale-125">💰</span>
-                    </div>
-                    <div class="p-7">
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            <span class="px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-400 text-xs font-bold border border-cyan-500/20">Tableau</span>
-                            <span class="px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-400 text-xs font-bold border border-cyan-500/20">SQL</span>
-                        </div>
-                        <h3 class="text-xl font-bold mb-3">Financial Report</h3>
-                        <p class="text-slate-400 text-sm mb-5 leading-relaxed">Automated financial reporting system with variance analysis and YoY growth visualizations.</p>
-                        <a href="#" class="text-green-400 font-semibold hover:underline inline-flex items-center gap-2 group/link">
-                            View Project <span class="transition-transform group-hover/link:translate-x-1">→</span>
-                        </a>
-                    </div>
-                </div>
-
-                <div class="card-3d glass rounded-2xl overflow-hidden reveal" style="animation-delay: 0.5s;">
-                    <div class="h-56 bg-gradient-to-br from-slate-800 via-slate-900 to-yellow-900/40 flex items-center justify-center relative overflow-hidden group">
-                        <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(234,179,8,0.15),transparent)]"></div>
-                        <span class="text-7xl relative z-10 transition-transform duration-500 group-hover:scale-125">✅</span>
-                    </div>
-                    <div class="p-7">
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            <span class="px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 text-xs font-bold border border-blue-500/20">React</span>
-                            <span class="px-3 py-1 rounded-full bg-orange-500/10 text-orange-400 text-xs font-bold border border-orange-500/20">DnD</span>
-                        </div>
-                        <h3 class="text-xl font-bold mb-3">Travel Blog / Trip Guide</h3>
-                        <p class="text-slate-400 text-sm mb-5 leading-relaxed">Sharing travel experiences and guides with location highlights and tips.</p>
-                        <a href="https://traveltothecountry.netlify.app/" class="text-yellow-400 font-semibold hover:underline inline-flex items-center gap-2 group/link">
-                            View Project <span class="transition-transform group-hover/link:translate-x-1">→</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Contact Section -->
-    <section id="contact" class="py-24 relative z-10">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="text-center mb-16 reveal">
-                <h2 class="text-4xl md:text-5xl font-black mb-4">Get In <span class="text-gradient">Touch</span></h2>
-                <div class="w-24 h-1 bg-gradient-to-r from-cyan-400 to-blue-500 mx-auto rounded-full mb-4"></div>
-                <p class="text-slate-400 text-lg">Let's build something extraordinary together</p>
-            </div>
-
-            <div class="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto perspective-container">
-                <a href="tel:7338714210" class="group reveal">
-                    <div class="glass rounded-2xl p-10 text-center card-3d" style="transform: rotateY(-8deg);">
-                        <div class="w-20 h-20 rounded-2xl bg-cyan-500/20 flex items-center justify-center text-cyan-400 text-3xl mx-auto mb-5 animate-pulse-glow group-hover:scale-110 transition-transform">
-                            📞
-                        </div>
-                        <h3 class="font-bold text-xl mb-2">Phone</h3>
-                        <p class="text-slate-400">7338714210</p>
-                    </div>
-                </a>
-
-                <a href="mailto:sivaramang313@gmail.com" class="group reveal" style="animation-delay: 0.15s;">
-                    <div class="glass rounded-2xl p-10 text-center card-3d">
-                        <div class="w-20 h-20 rounded-2xl bg-blue-500/20 flex items-center justify-center text-blue-400 text-3xl mx-auto mb-5 animate-pulse-glow group-hover:scale-110 transition-transform">
-                            ✉️
-                        </div>
-                        <h3 class="font-bold text-xl mb-2">Email</h3>
-                        <p class="text-slate-400">sivaramang313@gmail.com</p>
-                    </div>
-                </a>
-
-                <a href="https://www.linkedin.com/in/sivaraman-ganesan-8241b5296?utm_source=share_via&utm_content=profile&utm_medium=member_android" target="_blank" class="group reveal" style="animation-delay: 0.3s;">
-                    <div class="glass rounded-2xl p-10 text-center card-3d" style="transform: rotateY(8deg);">
-                        <div class="w-20 h-20 rounded-2xl bg-purple-500/20 flex items-center justify-center text-purple-400 text-3xl mx-auto mb-5 animate-pulse-glow group-hover:scale-110 transition-transform">
-                            💼
-                        </div>
-                        <h3 class="font-bold text-xl mb-2">LinkedIn</h3>
-                        <p class="text-slate-400">sivaraman-ganesan</p>
-                    </div>
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="relative z-10 border-t border-slate-800 py-10 text-center">
-        <p class="text-slate-500">© 2026 Sivaraman Ganesan. Crafted with 💙 & Three.js magic.</p>
-    </footer>
-
-    <script>
-        // ==================== THREE.JS BACKGROUND ====================
-        const canvas = document.getElementById('three-canvas');
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-        const particlesGeometry = new THREE.BufferGeometry();
-        const particlesCount = 800;
-        const posArray = new Float32Array(particlesCount * 3);
-        const colorArray = new Float32Array(particlesCount * 3);
-
-        for (let i = 0; i < particlesCount * 3; i += 3) {
-            posArray[i] = (Math.random() - 0.5) * 50;
-            posArray[i + 1] = (Math.random() - 0.5) * 50;
-            posArray[i + 2] = (Math.random() - 0.5) * 50;
-
-            const t = Math.random();
-            if (t < 0.33) {
-                colorArray[i] = 0.13; colorArray[i+1] = 0.83; colorArray[i+2] = 0.93;
-            } else if (t < 0.66) {
-                colorArray[i] = 0.23; colorArray[i+1] = 0.51; colorArray[i+2] = 0.96;
-            } else {
-                colorArray[i] = 0.66; colorArray[i+1] = 0.33; colorArray[i+2] = 0.97;
-            }
-        }
-
-        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-        particlesGeometry.setAttribute('color', new THREE.BufferAttribute(colorArray, 3));
-
-        const particlesMaterial = new THREE.PointsMaterial({
-            size: 0.08,
-            vertexColors: true,
-            transparent: true,
-            opacity: 0.8,
-            blending: THREE.AdditiveBlending
-        });
-
-        const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
-        scene.add(particlesMesh);
-
-        const shapes = [];
-        const geometries = [
-            new THREE.IcosahedronGeometry(0.5, 0),
-            new THREE.OctahedronGeometry(0.4, 0),
-            new THREE.TetrahedronGeometry(0.45, 0)
-        ];
-
-        for (let i = 0; i < 15; i++) {
-            const geo = geometries[Math.floor(Math.random() * geometries.length)];
-            const mat = new THREE.MeshBasicMaterial({
-                color: new THREE.Color().setHSL(0.5 + Math.random() * 0.2, 0.8, 0.5),
-                wireframe: true,
-                transparent: true,
-                opacity: 0.3
-            });
-            const mesh = new THREE.Mesh(geo, mat);
-            mesh.position.set(
-                (Math.random() - 0.5) * 30,
-                (Math.random() - 0.5) * 30,
-                (Math.random() - 0.5) * 20 - 10
-            );
-            mesh.userData = {
-                rotSpeed: { x: Math.random() * 0.01, y: Math.random() * 0.01 },
-                floatSpeed: Math.random() * 0.005,
-                floatOffset: Math.random() * Math.PI * 2
-            };
-            shapes.push(mesh);
-            scene.add(mesh);
-        }
-
-        camera.position.z = 15;
-
-        let mouseX = 0, mouseY = 0;
-        let targetX = 0, targetY = 0;
-
-        document.addEventListener('mousemove', (e) => {
-            mouseX = (e.clientX / window.innerWidth) * 2 - 1;
-            mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
-        });
-
-        const clock = new THREE.Clock();
-
-        function animate() {
-            requestAnimationFrame(animate);
-            const elapsed = clock.getElapsedTime();
-
-            targetX += (mouseX - targetX) * 0.02;
-            targetY += (mouseY - targetY) * 0.02;
-            camera.position.x = targetX * 3;
-            camera.position.y = targetY * 3;
-            camera.lookAt(0, 0, 0);
-
-            particlesMesh.rotation.y = elapsed * 0.05;
-            particlesMesh.rotation.x = elapsed * 0.02;
-
-            shapes.forEach((shape) => {
-                shape.rotation.x += shape.userData.rotSpeed.x;
-                shape.rotation.y += shape.userData.rotSpeed.y;
-                shape.position.y += Math.sin(elapsed + shape.userData.floatOffset) * shape.userData.floatSpeed;
-            });
-
-            renderer.render(scene, camera);
-        }
-        animate();
-
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-
-        // ==================== SCROLL REVEAL ====================
-        const revealElements = document.querySelectorAll('.reveal');
-        const revealObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('active');
-                }
-            });
-        }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
-
-        revealElements.forEach(el => revealObserver.observe(el));
-
-        // ==================== SMOOTH SCROLL ====================
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    document.getElementById('mobile-menu').classList.remove('open');
-                }
-            });
-        });
-
-        // ==================== MOBILE MENU ====================
-        const menuBtn = document.getElementById('menu-btn');
-        const closeMenuBtn = document.getElementById('close-menu');
-        const mobileMenu = document.getElementById('mobile-menu');
-
-        menuBtn.addEventListener('click', () => mobileMenu.classList.add('open'));
-        closeMenuBtn.addEventListener('click', () => mobileMenu.classList.remove('open'));
-
-        // ==================== 3D CUBE MOUSE INTERACTION ====================
-        const heroCube = document.getElementById('hero-cube');
-        let cubeRotationX = -15;
-        let cubeRotationY = 0;
-
-        document.addEventListener('mousemove', (e) => {
-            const rect = heroCube.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-            const deltaX = (e.clientX - centerX) / window.innerWidth;
-            const deltaY = (e.clientY - centerY) / window.innerHeight;
-
-            cubeRotationY = deltaX * 30;
-            cubeRotationX = -15 + deltaY * 20;
-
-            heroCube.style.transform = `rotateX(${cubeRotationX}deg) rotateY(${cubeRotationY}deg)`;
-            heroCube.style.animation = 'none';
-        });
-
-        document.addEventListener('mouseleave', () => {
-            heroCube.style.animation = 'spin-slow 20s linear infinite';
-        });
-
-        // ==================== NAV BACKGROUND ON SCROLL ====================
-        const nav = document.querySelector('nav');
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 50) {
-                nav.classList.add('glass-strong');
-                nav.classList.remove('glass');
-            } else {
-                nav.classList.add('glass');
-                nav.classList.remove('glass-strong');
-            }
-        });
-    </script>
+var work=$('#work');
+// ===== street walk scene =====
+var P=[
+{t:'Sales Dashboard',s:'Sales Dashboard',d:'Interactive analytics with live KPI tracking and a regional performance breakdown.',tags:['Python','Power BI'],c:'#5ee6ff',side:-1,ic:'M3 3v18h18M7 14v4M12 8v10M17 11v7'},
+{t:'Sandbox Music',s:'Sandbox Music',d:'A modern Spotify-style music player web app.',tags:['React','Tailwind'],c:'#6aa2ff',side:1,u:'https://sandboxmusics.netlify.app/',ic:'M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v6H4zM17 14h3v6h-3z'},
+{t:'Customer Segmentation',s:'Customer Segments',d:'RFM analysis that groups customers by behavior to guide targeted marketing.',tags:['SQL','Excel'],c:'#b08bff',side:-1,ic:'M12 3a9 9 0 1 0 9 9h-9zM15 3.5A9 9 0 0 1 20.5 9H15z'},
+{t:'Parallax Website',s:'Parallax Website',d:'A responsive scrolling site with smooth parallax animation.',tags:['JavaScript','API'],c:'#ff7eb6',side:1,u:'https://parallaxwe.netlify.app/',ic:'M12 2l10 5-10 5L2 7zM2 12l10 5 10-5M2 17l10 5 10-5'},
+{t:'Financial Report',s:'Financial Report',d:'Automated reporting with variance analysis and year-over-year growth charts.',tags:['Tableau','SQL'],c:'#4ade80',side:-1,ic:'M3 17l6-6 4 4 8-9M15 6h6v6'},
+{t:'Travel Blog and Trip Guide',s:'Travel Guide',d:'Travel stories and guides with location highlights and tips.',tags:['React','DnD'],c:'#fbbf24',side:1,u:'https://traveltothecountry.netlify.app/',ic:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM15.5 8.5l-2 5-5 2 2-5z'}
+];
+var sc=$('#st'),R2=new THREE.WebGLRenderer({canvas:sc,antialias:true});R2.setPixelRatio(Math.min(devicePixelRatio,1.75));
+var S2=new THREE.Scene();S2.background=new THREE.Color(0x05070b);S2.fog=new THREE.Fog(0x05070b,14,100);
+var C2=new THREE.PerspectiveCamera(65,1,.1,300),SP=34,NU=P.length+1,END=-NU*SP-70;
+function rs(){R2.setSize(innerWidth,innerHeight);C2.aspect=innerWidth/innerHeight;C2.fov=C2.aspect<1?88:65;C2.updateProjectionMatrix()}rs();addEventListener('resize',rs);
+function winTex(rx,ry){var c=document.createElement('canvas');c.width=64;c.height=128;var x=c.getContext('2d');x.fillStyle='#070b12';x.fillRect(0,0,64,128);
+ for(var r=0;r<16;r++)for(var q=0;q<8;q++)if(Math.random()<.4){x.fillStyle=Math.random()<.82?'rgba(255,196,120,'+(.35+Math.random()*.5)+')':'rgba(120,220,255,.75)';x.fillRect(q*8+2,r*8+2,4,5)}
+ var t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rx,ry);return t}
+var hs=[10,16,24,34],gm=[],mt=[];
+hs.forEach(function(h){gm.push(new THREE.BoxGeometry(8,h,8));mt.push(new THREE.MeshBasicMaterial({map:winTex(1,h/16)}))});
+function nearP(side,row,z){for(var i=0;i<P.length;i++)if(P[i].side==side&&row==0&&Math.abs(z-(-(i+1)*SP-2.5))<11)return true;return false}
+for(var z=24;z>END;z-=9)for(var sd=-1;sd<=1;sd+=2)for(var row=0;row<2;row++){
+ if(Math.random()<.12||nearP(sd,row,z))continue;var k=Math.floor(Math.random()*4),m=new THREE.Mesh(gm[k],mt[k]);
+ m.position.set(sd*(9.8+row*10),hs[k]/2,z+Math.random()*2);S2.add(m)}
+// road
+var road=new THREE.Mesh(new THREE.PlaneGeometry(11,420),new THREE.MeshBasicMaterial({color:0x0b1018}));road.rotation.x=-Math.PI/2;road.position.set(0,0,-170);S2.add(road);
+var gr=new THREE.Mesh(new THREE.PlaneGeometry(220,420),new THREE.MeshBasicMaterial({color:0x070a10}));gr.rotation.x=-Math.PI/2;gr.position.set(0,-.02,-170);S2.add(gr);
+var dm=new THREE.MeshBasicMaterial({color:0xcfd8e4}),dg=new THREE.BoxGeometry(.25,.02,2);
+for(var d=10;d>END;d-=4){var q=new THREE.Mesh(dg,dm);q.position.set(0,.03,d);S2.add(q)}
+[-5.2,5.2].forEach(function(x){var l=new THREE.Mesh(new THREE.BoxGeometry(.08,.03,420),new THREE.MeshBasicMaterial({color:0x2a8fa3}));l.position.set(x,.03,-170);S2.add(l)});
+// lamps
+var pm=new THREE.MeshBasicMaterial({color:0x1b2432}),lg=new THREE.SphereGeometry(.28,10,8),lm=new THREE.MeshBasicMaterial({color:0xffd9a0}),pg=new THREE.CylinderGeometry(.06,.08,5.4,6);
+for(var z2=14;z2>END;z2-=16)[-5.4,5.4].forEach(function(x){var p=new THREE.Mesh(pg,pm);p.position.set(x,2.7,z2);S2.add(p);var l=new THREE.Mesh(lg,lm);l.position.set(x*.9,5.5,z2);S2.add(l)});
+// stars
+var sp2=new Float32Array(900);for(var i=0;i<900;i+=3){sp2[i]=(Math.random()-.5)*220;sp2[i+1]=40+Math.random()*60;sp2[i+2]=30-Math.random()*400}
+var sg=new THREE.BufferGeometry();sg.setAttribute('position',new THREE.BufferAttribute(sp2,3));S2.add(new THREE.Points(sg,new THREE.PointsMaterial({size:.5,color:0xbfe9ff,fog:false})));
+// project buildings + neon signs
+var signs=[],beacons=[];
+P.forEach(function(p,i){
+ var zb=-(i+1)*SP-2.5,x=p.side*10.5,col=new THREE.Color(p.c);
+ var b=new THREE.Mesh(new THREE.BoxGeometry(10,22,10),new THREE.MeshBasicMaterial({map:winTex(1.25,1.4)}));b.position.set(x,11,zb);S2.add(b);
+ var e=new THREE.LineSegments(new THREE.EdgesGeometry(b.geometry),new THREE.LineBasicMaterial({color:col}));e.position.copy(b.position);S2.add(e);
+ var cv2=document.createElement('canvas');cv2.width=1024;cv2.height=600;var tx=new THREE.CanvasTexture(cv2);
+ var sg2=new THREE.Mesh(new THREE.PlaneGeometry(8,4.7),new THREE.MeshBasicMaterial({map:tx,fog:false}));sg2.rotation.y=p.side<0?Math.PI/2:-Math.PI/2;sg2.position.set(p.side*5.43,9,zb);S2.add(sg2);
+ var bc=new THREE.Mesh(new THREE.SphereGeometry(.45,12,10),new THREE.MeshBasicMaterial({color:col,fog:false}));bc.position.set(x,22.6,zb);S2.add(bc);beacons.push(bc);
+ signs.push({cv:cv2,tx:tx,p:p});
+});
+function drawSigns(){signs.forEach(function(o){var p=o.p,x=o.cv.getContext('2d');x.clearRect(0,0,1024,600);x.fillStyle='#060a12';x.fillRect(0,0,1024,600);
+ var g=x.createRadialGradient(240,300,10,240,300,460);g.addColorStop(0,p.c+'66');g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.fillRect(0,0,1024,600);
+ x.strokeStyle=p.c;x.shadowColor=p.c;x.shadowBlur=30;x.lineWidth=10;x.strokeRect(20,20,984,560);
+ x.save();x.translate(70,150);x.scale(12,12);x.lineWidth=.6;x.lineCap='round';x.lineJoin='round';x.stroke(new Path2D(p.ic));x.restore();
+ x.shadowBlur=0;x.fillStyle='#fff';var f=88;do{x.font='700 '+f+'px "Cormorant Garamond",Georgia,serif';f-=4}while(x.measureText(p.s).width>570&&f>30);x.fillText(p.s,400,300);
+ x.fillStyle=p.c;x.font='300 38px Inter,sans-serif';x.fillText(p.tags.join(', '),402,370);o.tx.needsUpdate=true})}
+drawSigns();if(document.fonts&&document.fonts.load)document.fonts.load('700 80px "Cormorant Garamond"').then(drawSigns);
+// hud
+var pn=$('#pn'),dots=$('#dots'),intro=$('#intro'),hint=$('#hint'),endm=$('#endm'),pk=-1;
+dots.innerHTML=P.map(function(){return '<i></i>'}).join('');var di=[].slice.call(dots.children);
+function setPanel(k){var p=P[k];pk=k;pn.className='panel '+(p.side<0?'r':'l');
+ pn.innerHTML='<svg class="pic" viewBox="0 0 24 24" style="stroke:'+p.c+';color:'+p.c+'"><path d="'+p.ic+'"/></svg><small>On your '+(p.side<0?'left':'right')+'</small><h3>'+p.t+'</h3><p>'+p.d+'</p><div class="tags">'+p.tags.map(function(t){return '<span>'+t+'</span>'}).join('')+'</div>'+(p.u?'<a href="'+p.u+'" target="_blank" rel="noopener" style="--c:'+p.c+'">Walk inside: open the live site</a>':'<em>Case study coming soon</em>')}
+function sm(a,b,x){x=Math.max(0,Math.min(1,(x-a)/(b-a)));return x*x*(3-2*x)}
+var fwd=new THREE.Vector3(),tgt=new THREE.Vector3();
+window.__street=function(el){
+ var r=work.getBoundingClientRect();if(r.bottom<0||r.top>innerHeight)return;
+ var p=Math.max(0,Math.min(1,-r.top/(work.offsetHeight-innerHeight))),s=p*NU,k=Math.min(NU-1,Math.floor(s)),f=s-k,W=.45;
+ var a=Math.min(1,f/W),e=a*a*(3-2*a),z=-(k+e)*SP,dw=k<P.length?Math.max(0,(f-W)/(1-W)):0,wk=(f<W||k>=P.length)?1:0;
+ var look=sm(0,.25,dw)*(1-sm(.78,1,dw));
+ C2.position.set(0,1.7+(wk?Math.sin(s*SP*.9)*.05*Math.sin(a*3.14):0),z);
+ fwd.set(Math.sin(el*.4)*.8,1.9,z-20);
+ if(k<P.length){var sd=P[k].side;tgt.set(sd*5.4,7.5,-(k+1)*SP-2.5);fwd.lerp(tgt,look*.92)}
+ C2.lookAt(fwd);
+ beacons.forEach(function(b,i){b.scale.setScalar(1+.35*Math.sin(el*3+i))});
+ R2.render(S2,C2);
+ var po=k<P.length?look:0;if(k<P.length&&pk!==k)setPanel(k);
+ pn.style.opacity=po;pn.style.pointerEvents=po>.6?'auto':'none';pn.style.transform=(innerWidth>700?'translateY(-50%)':'')+' translateX('+((1-po)*(P[Math.max(0,k)].side<0?40:-40))+'px)';
+ di.forEach(function(d,i){d.classList.toggle('on',i===k&&k<P.length||(k>=P.length&&i===P.length-1&&false))});
+ intro.style.opacity=1-sm(0,.035,p);hint.style.opacity=p<.02||p>.995?0:(k<P.length&&dw>0?.8:.0)+ (wk?.0:0);
+ if(p<.02)hint.style.opacity=.9;
+ endm.style.opacity=k>=P.length?sm(.45,.9,f):0;
+};
+// three.js tunnel
+var cv=$('#gl'),R=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true});
+R.setPixelRatio(Math.min(devicePixelRatio,2));R.setSize(innerWidth,innerHeight);
+var S=new THREE.Scene();S.fog=new THREE.FogExp2(0x05070b,.035);
+var C=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,.1,200);C.position.z=0;
+var N=2200,pos=new Float32Array(N*3),col=new Float32Array(N*3),cs=[[.37,.9,1],[.55,.48,1],[.9,.95,1]];
+function place(i,z){var a=Math.random()*6.283,r=3+Math.random()*22;pos[i*3]=Math.cos(a)*r;pos[i*3+1]=Math.sin(a)*r;pos[i*3+2]=z}
+for(var i=0;i<N;i++){place(i,-Math.random()*120);var c=cs[Math.floor(Math.random()*3)];col[i*3]=c[0];col[i*3+1]=c[1];col[i*3+2]=c[2]}
+var g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));g.setAttribute('color',new THREE.BufferAttribute(col,3));
+var pts=new THREE.Points(g,new THREE.PointsMaterial({size:.13,vertexColors:true,transparent:true,opacity:.9,blending:THREE.AdditiveBlending,depthWrite:false}));S.add(pts);
+var rings=[];for(var k=0;k<7;k++){var m=new THREE.Mesh(new THREE.TorusGeometry(5+k*.6,.015,6,80),new THREE.MeshBasicMaterial({color:k%2?0x8b7bff:0x5ee6ff,transparent:true,opacity:.5}));m.position.z=-k*14-10;S.add(m);rings.push(m)}
+var core=new THREE.Mesh(new THREE.IcosahedronGeometry(1.6,1),new THREE.MeshBasicMaterial({color:0x5ee6ff,wireframe:true,transparent:true,opacity:.35}));core.position.set(0,0,-14);S.add(core);
+var sy=0,vel=0,prev=0,intro=0;
+addEventListener('resize',function(){C.aspect=innerWidth/innerHeight;C.updateProjectionMatrix();R.setSize(innerWidth,innerHeight)});
+var prog=$('#prog'),clk=new THREE.Clock();
+function frame(){
+  requestAnimationFrame(frame);
+  var el=clk.getElapsedTime(),H=document.documentElement.scrollHeight-innerHeight,y=scrollY,p=H>0?y/H:0;
+  vel+=((y-prev)-vel)*.1;prev=y;
+  prog.style.transform='scaleX('+p+')';
+  // cursor
+  cx+=(tx-cx)*.12;cy+=(ty-cy)*.12;cur.style.transform='translate('+cx+'px,'+cy+'px)';
+  // camera dolly: cruise + scroll boost
+  var spd=(RM?0:.03)+Math.abs(vel)*.012;
+  for(var i=0;i<N;i++){var z=pos[i*3+2]+spd*10;if(z>4)place(i,-120);else pos[i*3+2]=z}
+  g.attributes.position.needsUpdate=true;
+  rings.forEach(function(r,i){r.position.z+=spd*10;if(r.position.z>4)r.position.z-=98;r.rotation.z=el*.1*(i%2?1:-1)+p*6;r.scale.setScalar(1+Math.sin(el+i)*.03)});
+  core.rotation.x=el*.3+p*5;core.rotation.y=el*.4;core.position.z=-14-p*10;core.scale.setScalar(1+Math.sin(el*1.5)*.06);
+  C.rotation.z+=((p*1.2+mx*.05)-C.rotation.z)*.05;
+  C.position.x+=(mx*1.2-C.position.x)*.04;C.position.y+=(-my*1.2-C.position.y)*.04;
+  C.fov=70+Math.min(25,Math.abs(vel)*.8);C.updateProjectionMatrix();
+  R.render(S,C);
+  // about words light up
+  var ar=story.getBoundingClientRect(),ap=1-Math.min(1,Math.max(0,(ar.top-innerHeight*.05)/(innerHeight*.45)));
+  var wp=Math.max(0,Math.min(1,(y-$('#about').offsetTop+innerHeight*.5)/($('#about').offsetHeight*.7)));
+  ws.forEach(function(w,i){w.classList.toggle('on',i/ws.length<wp)});
+  // street
+  if(window.__street)window.__street(el);
+  // hero fade
+  var hero=$('#hero');hero.style.opacity=Math.max(0,1-y/(innerHeight*.8));hero.style.transform='translateY('+(y*.3)+'px) scale('+(1+y/4000)+')';
+}
+frame();
+})();
+</script>
 </body>
-</html> 
+</html>
