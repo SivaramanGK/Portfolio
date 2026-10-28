@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Sivaraman Ganesan | Data Analyst & Frontend Developer</title>
+<title>Sivaraman Ganesan | Data Analyst & Power BI Developer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500;1,600&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500;1,600&family=Inter:wght@300;400;600&family=Bricolage+Grotesque:wght@700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
 :root{--bg:#05070b;--fg:#e9edf2;--dim:#8a94a3;--accent:#5ee6ff;--accent2:#8b7bff;--line:rgba(255,255,255,.12);color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -25,7 +25,7 @@ a{color:inherit;text-decoration:none}
 body.live .bar{height:0}
 #pre{position:fixed;inset:0;z-index:100;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.2rem;transition:opacity 1s .2s,visibility 1.2s}
 #pre.done{opacity:0;visibility:hidden}
-#cnt{font-size:clamp(5rem,18vw,12rem);line-height:1;font-style:italic;color:var(--fg)}
+#fc{position:absolute;inset:0;width:100%;height:100%}#skip{position:absolute;z-index:2;top:calc(14px + env(safe-area-inset-top,0px));right:16px;background:rgba(0,0,0,.4);border:1px solid var(--line);color:var(--dim);padding:.4rem .9rem;border-radius:99px;font:inherit;font-size:.8rem;cursor:pointer}#skip:hover{color:var(--fg);border-color:var(--accent)}#cnt{font-size:clamp(5rem,18vw,12rem);line-height:1;font-style:italic;color:var(--fg)}
 #pre p{color:var(--dim);letter-spacing:.3em;font-size:.8rem}
 #pre i{display:block;width:min(260px,60vw);height:1px;background:var(--line);position:relative;overflow:hidden}
 #pre i b{position:absolute;inset:0;background:var(--accent);transform:scaleX(0);transform-origin:left}
@@ -104,7 +104,7 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
 </style>
 </head>
 <body>
-<div id="pre"><div id="cnt" class="serif">0</div><i><b id="pb"></b></i><p>Sivaraman Ganesan presents</p></div>
+<div id="pre"><canvas id="fc"></canvas><button id="skip">Skip intro</button></div>
 <div class="bar t"></div><div class="bar b"></div>
 <div id="prog"></div><div class="grain"></div><div class="vig"></div><div id="cur"></div>
 <canvas id="gl"></canvas>
@@ -120,7 +120,7 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
   <div class="cue"></div>
 </section>
 
-<section class="about" id="about"><p id="story">I work where data meets design. I write SQL, build Power BI dashboards, and craft responsive React interfaces, so the numbers I find are also easy to see and understand.</p></section>
+<section class="about" id="about"><p id="story">I work where data meets design. I write SQL, build Power BI dashboards, and design clean, responsive web pages, so the numbers I find are also easy to see and understand.</p></section>
 <div class="facts">
   <div><b data-n="3" data-s="+">0</b><span>Years of experience</span></div>
   <div><b data-n="15" data-s="+">0</b><span>Projects shipped</span></div>
@@ -128,8 +128,8 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
 </div>
 
 <div class="marq" id="skills"><div>
-<span>Power BI</span><span>SQL</span><span>Python</span><span>React</span><span>Tableau</span><span>Excel</span><span>JavaScript</span><span>Tailwind CSS</span><span>Three.js</span>
-<span>Power BI</span><span>SQL</span><span>Python</span><span>React</span><span>Tableau</span><span>Excel</span><span>JavaScript</span><span>Tailwind CSS</span><span>Three.js</span>
+<span>Power BI</span><span>SQL</span><span>Python</span><span>Tableau</span><span>Excel</span><span>JavaScript</span><span>Tailwind CSS</span><span>Three.js</span>
+<span>Power BI</span><span>SQL</span><span>Python</span><span>Tableau</span><span>Excel</span><span>JavaScript</span><span>Tailwind CSS</span><span>Three.js</span>
 </div></div>
 
 <section class="street" id="work"><div class="pin">
@@ -164,18 +164,65 @@ document.querySelectorAll('#title .row').forEach(function(r,ri){
   t.split('').forEach(function(c,i){var s=document.createElement('span');s.className='ch';s.textContent=c;s.style.transitionDelay=(2.2+ri*.35+i*.05)+'s';r.appendChild(s)});
 });
 // split story into words
-var story=$('#story'),words=story.textContent.split(' '),key=['data','design.','SQL,','Power','BI','React'];
+var story=$('#story'),words=story.textContent.split(' '),key=['data','design.','SQL,','Power','BI'];
 story.innerHTML=words.map(function(w){return '<span class="w'+(key.indexOf(w)>-1?' k':'')+'">'+w+'</span>'}).join(' ');
 var ws=[].slice.call(story.querySelectorAll('.w'));
-// preloader
-var cnt=$('#cnt'),pb=$('#pb'),n=0,t0=performance.now(),dur=RM?300:2400;
-(function tick(now){
-  var p=Math.min(1,((now||performance.now())-t0)/dur);n=Math.round(100*(1-Math.pow(1-p,3)));
-  cnt.textContent=n;pb.style.transform='scaleX('+p+')';
-  if(p<1)requestAnimationFrame(tick);else{$('#pre').classList.add('done');document.body.classList.add('live')}
+// ===== HUD boot intro: SIVA.AI =====
+(function(){
+var fc=$('#fc'),fx=fc.getContext('2d'),FW,FH,U,CX,CY,RY,scan=null,done=false;
+if(document.fonts&&document.fonts.load)document.fonts.load('800 40px "Bricolage Grotesque"');
+function fs(){var d=Math.min(devicePixelRatio,2);FW=innerWidth;FH=innerHeight;fc.width=FW*d;fc.height=FH*d;fx.setTransform(d,0,0,d,0,0);U=Math.min(FW/760,FH/520);CX=FW/2;CY=FH/2;RY=FH*.43;
+ var p=document.createElement('canvas');p.width=4;p.height=4;var q=p.getContext('2d');q.fillStyle='rgba(0,0,0,.3)';q.fillRect(0,0,4,1);scan=fx.createPattern(p,'repeat')}fs();addEventListener('resize',fs);
+function finish(){if(done)return;done=true;$('#pre').classList.add('done');document.body.classList.add('live')}
+$('#skip').addEventListener('click',finish);addEventListener('keydown',function(e){if(e.key==='Escape')finish()});
+if(RM){setTimeout(finish,300);return}
+var A='#5ee6ff',B='#8b7bff',HEX='0123456789ABCDEF',t0=performance.now();
+var NW=new Date(),HR=NW.getHours(),TM=('0'+HR).slice(-2)+':'+('0'+NW.getMinutes()).slice(-2);
+var LOG=[['BOOTING SIVA.AI CORE',.6],['VISITOR LOCAL TIME '+TM,1.0],['LOADING DATASETS',1.4],['LINKING SQL ENGINE',1.8],['CALIBRATING POWER BI',2.2],['RENDERING DASHBOARDS',2.6],['ALL SYSTEMS NOMINAL',3.0]];
+var MOD=['SQL','POWER BI','PYTHON','TABLEAU','EXCEL'],V=[HR<5?'You’re up late.':HR<12?'Good morning.':HR<17?'Good afternoon.':HR<22?'Good evening.':'Good night.','Welcome to the portfolio of Sivaraman Ganesan.'];
+function ez(x){x=Math.max(0,Math.min(1,x));return x*x*(3-2*x)}
+function arc(r,w,a0,a1,al,dash){fx.save();fx.strokeStyle=A;fx.shadowColor=A;fx.shadowBlur=10;fx.lineWidth=w;fx.globalAlpha=al;if(dash)fx.setLineDash(dash);fx.beginPath();fx.arc(CX,RY,r,a0,a1);fx.stroke();fx.restore()}
+function ticks(r,n,len,rot,al){fx.save();fx.translate(CX,RY);fx.rotate(rot);fx.strokeStyle=A;fx.globalAlpha=al;fx.lineWidth=1.5;for(var i=0;i<n;i++){fx.rotate(6.2832/n);fx.beginPath();fx.moveTo(r,0);fx.lineTo(r+(i%5?len:len*2),0);fx.stroke()}fx.restore()}
+function txt(s,x,y,sz,col,al,ta){fx.save();fx.globalAlpha=al;fx.fillStyle=col;fx.font=sz+'px "Courier New",monospace';fx.textAlign=ta||'left';fx.fillText(s,x,y);fx.restore()}
+function brk(x,y,dx,dy,l,al){fx.save();fx.strokeStyle=A;fx.lineWidth=2;fx.globalAlpha=al;fx.beginPath();fx.moveTo(x+dx*l,y);fx.lineTo(x,y);fx.lineTo(x,y+dy*l);fx.stroke();fx.restore()}
+function loop(now){if(done)return;requestAnimationFrame(loop);
+ var t=(now-t0)/1000,u=U,i,wide=FW>=760,R=140*u,fade=ez(t/.6),fly=ez((t-5.6)/.8),hud=1-ez((t-5.9)/.4);
+ fx.clearRect(0,0,FW,FH);fx.fillStyle='#03060c';fx.fillRect(0,0,FW,FH);
+ var g=fx.createRadialGradient(CX,CY,0,CX,CY,FH*.8);g.addColorStop(0,'rgba(20,90,140,'+.35*fade*hud+')');g.addColorStop(1,'rgba(0,0,0,0)');fx.fillStyle=g;fx.fillRect(0,0,FW,FH);
+ if(hud>0){
+  fx.save();fx.globalAlpha=hud*fade;var sc=1+fly*5;fx.translate(CX,CY);fx.scale(sc,sc);fx.translate(-CX,-CY);
+  for(var gx=0;gx<FW;gx+=36*u)for(var gy=0;gy<FH;gy+=36*u){var d=Math.hypot(gx-CX,gy-RY);fx.fillStyle='rgba(94,230,255,'+(.05+.16*Math.max(0,Math.sin(d*.02-t*3)))+')';fx.fillRect(gx,gy,2,2)}
+  var p=ez((t-.8)/3),pc=Math.round(p*100),rot=t*.3;
+  arc(R+30*u,1.5,0,6.2832*ez((t-.2)/1),.9);ticks(R+30*u,60,5*u,rot,.8*ez((t-.6)/.8));
+  for(var k=0;k<3;k++){var a0=rot*(k%2?-1.6:1.4)+k*2.1;arc(R,5*u,a0,a0+1.3-k*.25,.85*ez((t-.4-k*.2)/.6))}
+  arc(R-22*u,1.5,0,6.2832,.5*ez((t-.8)/.6),[4*u,6*u]);arc(R-40*u,7*u,-1.5708,-1.5708+6.2832*p,.9*ez((t-.8)/.5));ticks(R-62*u,36,4*u,-rot*2,.6*ez((t-1)/.8));
+  var amp=(t>4&&t<5.7?1:.15)*8*u,wr=R-90*u;fx.save();fx.strokeStyle=B;fx.shadowColor=B;fx.shadowBlur=14;fx.lineWidth=2;fx.globalAlpha=.9*ez((t-1.4)/.6);fx.beginPath();
+  for(i=0;i<=120;i++){var an=i/120*6.2832,w=wr+Math.sin(an*7+t*7)*amp*Math.sin(an*3+t*4)+Math.sin(an*13-t*9)*amp*.4,px=CX+Math.cos(an)*w,py=RY+Math.sin(an)*w;i?fx.lineTo(px,py):fx.moveTo(px,py)}fx.closePath();fx.stroke();fx.restore();
+  txt(pc+'%',CX,RY+8*u,Math.max(16,28*u),'#fff',ez((t-.8)/.5),'center');txt('SIVA.AI',CX,RY+26*u,Math.max(9,10*u),A,ez((t-1)/.5),'center');
+  var m=FH*.11+16*u,ba=ez((t-.3)/.6);brk(24*u,m,1,1,40*u*ba,ba);brk(FW-24*u,m,-1,1,40*u*ba,ba);brk(24*u,FH-m,1,-1,40*u*ba,ba);brk(FW-24*u,FH-m,-1,-1,40*u*ba,ba);
+  var lx=wide?FW*.05:18*u,ly=wide?RY-60*u:m+30*u,f2=Math.max(11,13*u);
+  LOG.forEach(function(L,k){var n=Math.floor((t-L[1])*38);if(n<=0)return;fx.font=f2+'px "Courier New",monospace';var wd=fx.measureText('> '+L[0]).width;txt('> '+L[0].slice(0,n),lx,ly+k*22*u,f2,A,.9);if(n>L[0].length+4)txt('[OK]',lx+wd+10,ly+k*22*u,f2,'#4ade80',1)});
+  var mx=wide?FW-FW*.05-190*u:18*u,my=wide?RY-60*u:FH-m-125*u;
+  MOD.forEach(function(nm,k){var q=ez((t-1.2-k*.25)/.9),y=my+k*24*u,bw=Math.max(60,80*u);txt(nm,mx,y,f2,'#c9d6e4',.9*q);fx.save();fx.globalAlpha=q;fx.strokeStyle='rgba(94,230,255,.4)';fx.strokeRect(mx+100*u,y-9*u,bw,8*u);fx.fillStyle=A;fx.fillRect(mx+100*u,y-9*u,bw*q*(.82+k*.04),8*u);fx.restore()});
+  if(t>3&&t<4.2){var sy=FH*.11+FH*.78*ez((t-3)/1.2),sg=fx.createLinearGradient(0,sy-30*u,0,sy);sg.addColorStop(0,'rgba(94,230,255,0)');sg.addColorStop(1,'rgba(94,230,255,.35)');fx.fillStyle=sg;fx.fillRect(0,sy-30*u,FW,30*u);fx.fillStyle=A;fx.fillRect(0,sy,FW,2)}
+  V.forEach(function(s,k){var n=Math.floor((t-4-k*.7)*40);if(n<=0)return;var sh=s.slice(0,n),y=RY+R+(52+k*28)*u;fx.save();fx.textAlign='center';fx.fillStyle='#fff';fx.shadowColor=A;fx.shadowBlur=14;fx.font='700 '+Math.max(14,19*u)+'px "Bricolage Grotesque",Inter,sans-serif';fx.fillText(sh+(n<=s.length&&Math.sin(t*14)>0?'▌':''),CX,y);fx.restore()});
+  fx.restore()}
+ if(t>5.6&&t<6.5){fx.save();fx.strokeStyle='rgba(94,230,255,'+.6*(1-ez((t-6)/.5))+')';fx.lineWidth=2;for(i=0;i<60;i++){var a2=i*.4777,r1=FW*.04+fly*FW*.3*((i%5)+1)/5,r2=r1+FW*.2*fly;fx.beginPath();fx.moveTo(CX+Math.cos(a2)*r1,CY+Math.sin(a2)*r1);fx.lineTo(CX+Math.cos(a2)*r2,CY+Math.sin(a2)*r2);fx.stroke()}fx.restore()}
+ if(t>6.1){var L2=FW<650?['Sivaraman','Ganesan']:['Sivaraman Ganesan'],fz=FW<650?FW*.17:Math.min(FW*.085,130),res=Math.floor((t-6.2)/.06),idx=0;
+  fx.save();fx.textAlign='center';fx.font='800 '+fz*.95+'px "Bricolage Grotesque",Inter,sans-serif';fx.shadowColor=A;fx.shadowBlur=30;
+  L2.forEach(function(s,li){var ws=[],tot=0,k2;for(k2=0;k2<s.length;k2++){var w2=fx.measureText(s[k2]).width;ws.push(w2);tot+=w2}var x0=CX-tot/2,yy=FH*.45+li*fz*.95;
+   for(k2=0;k2<s.length;k2++){var ok=idx<res||s[k2]==' ';idx++;fx.fillStyle=ok?'#fff':A;fx.globalAlpha=ok?1:.8;fx.fillText(ok?s[k2]:HEX[Math.floor(Math.random()*16)],x0+ws[k2]/2,yy);x0+=ws[k2]}});
+  fx.globalAlpha=ez((t-7)/.4);fx.shadowBlur=0;fx.fillStyle=A;fx.font='300 '+Math.max(12,fz*.14)+'px Inter,sans-serif';try{fx.letterSpacing='8px'}catch(e){}fx.fillText('DATA ANALYST  ·  POWER BI DEVELOPER',CX,FH*.45+L2.length*fz*.95+24*u);fx.restore()}
+ var fl=ez((t-5.9)/.2)*(1-ez((t-6.1)/.4));if(fl>.01){fx.fillStyle='rgba(255,255,255,'+fl*.9+')';fx.fillRect(0,0,FW,FH)}
+ var bh=FH*.11*ez(t/.5)*(1-ez((t-7.4)/.4));fx.fillStyle='#000';fx.fillRect(0,0,FW,bh);fx.fillRect(0,FH-bh,FW,bh);
+ var vg=fx.createRadialGradient(CX,CY,FH*.3,CX,CY,FH*.95);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.7)');fx.fillStyle=vg;fx.fillRect(0,0,FW,FH);
+ if(scan){fx.fillStyle=scan;fx.fillRect(0,0,FW,FH)}
+ if(t<.6){fx.fillStyle='rgba(0,0,0,'+(1-ez(t/.6))+')';fx.fillRect(0,0,FW,FH)}
+ if(t>7.8)finish()}
+requestAnimationFrame(loop);
 })();
 // rotating roles
-var roles=['Data analyst','Power BI developer','Frontend developer','Storyteller with data'],ri=0,rl=$('#role');
+var roles=['Data analyst','Power BI developer','Dashboard builder','Storyteller with data'],ri=0,rl=$('#role');
 setInterval(function(){rl.style.transition='opacity .5s';rl.style.opacity=0;setTimeout(function(){ri=(ri+1)%roles.length;rl.textContent=roles[ri];rl.style.opacity=1},550)},3600);
 // counters
 var cio=new IntersectionObserver(function(es){es.forEach(function(e){if(!e.isIntersecting)return;cio.unobserve(e.target);var el=e.target,end=+el.dataset.n,s=performance.now();(function f(now){var p=Math.min(1,(now-s)/1600);el.textContent=Math.round(end*(1-Math.pow(1-p,3)))+(p>=1?el.dataset.s:'');if(p<1)requestAnimationFrame(f)})(s)})},{threshold:.6});
@@ -190,11 +237,11 @@ var work=$('#work');
 // ===== street walk scene =====
 var P=[
 {t:'Sales Dashboard',s:'Sales Dashboard',d:'Interactive analytics with live KPI tracking and a regional performance breakdown.',tags:['Python','Power BI'],c:'#5ee6ff',side:-1,ic:'M3 3v18h18M7 14v4M12 8v10M17 11v7'},
-{t:'Sandbox Music',s:'Sandbox Music',d:'A modern Spotify-style music player web app.',tags:['React','Tailwind'],c:'#6aa2ff',side:1,u:'https://sandboxmusics.netlify.app/',ic:'M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v6H4zM17 14h3v6h-3z'},
+{t:'Sandbox Music',s:'Sandbox Music',d:'A modern Spotify-style music player web app.',tags:['JavaScript','Tailwind'],c:'#6aa2ff',side:1,u:'https://sandboxmusics.netlify.app/',ic:'M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v6H4zM17 14h3v6h-3z'},
 {t:'Customer Segmentation',s:'Customer Segments',d:'RFM analysis that groups customers by behavior to guide targeted marketing.',tags:['SQL','Excel'],c:'#b08bff',side:-1,ic:'M12 3a9 9 0 1 0 9 9h-9zM15 3.5A9 9 0 0 1 20.5 9H15z'},
 {t:'Parallax Website',s:'Parallax Website',d:'A responsive scrolling site with smooth parallax animation.',tags:['JavaScript','API'],c:'#ff7eb6',side:1,u:'https://parallaxwe.netlify.app/',ic:'M12 2l10 5-10 5L2 7zM2 12l10 5 10-5M2 17l10 5 10-5'},
 {t:'Financial Report',s:'Financial Report',d:'Automated reporting with variance analysis and year-over-year growth charts.',tags:['Tableau','SQL'],c:'#4ade80',side:-1,ic:'M3 17l6-6 4 4 8-9M15 6h6v6'},
-{t:'Travel Blog and Trip Guide',s:'Travel Guide',d:'Travel stories and guides with location highlights and tips.',tags:['React','DnD'],c:'#fbbf24',side:1,u:'https://traveltothecountry.netlify.app/',ic:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM15.5 8.5l-2 5-5 2 2-5z'}
+{t:'Travel Blog and Trip Guide',s:'Travel Guide',d:'Travel stories and guides with location highlights and tips.',tags:['JavaScript','DnD'],c:'#fbbf24',side:1,u:'https://traveltothecountry.netlify.app/',ic:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM15.5 8.5l-2 5-5 2 2-5z'}
 ];
 var sc=$('#st'),R2=new THREE.WebGLRenderer({canvas:sc,antialias:true});R2.setPixelRatio(Math.min(devicePixelRatio,1.75));
 var S2=new THREE.Scene();S2.background=new THREE.Color(0x05070b);S2.fog=new THREE.Fog(0x05070b,14,100);
